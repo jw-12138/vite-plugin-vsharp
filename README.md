@@ -11,7 +11,6 @@ Currently supported file types are:
 
 Currently supported sharp functions are:
 
-- `sharp()`
 - `sharp().jpeg()`
 - `sharp().png()`
 - `sharp().gif()`
