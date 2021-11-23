@@ -8,7 +8,14 @@
     "vite-plugin",
     "sharp.js"
   ],
+  "scripts": {
+    "dev": "npx babel vsharp.js --watch --out-file ./d/vsharp.js",
+    "build": "npx babel vsharp.js --out-file ./d/vsharp.js"
+  },
   "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
     "vite": "^2.6.4"
   },
   "peerDependencies": {

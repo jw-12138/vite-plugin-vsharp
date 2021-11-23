@@ -2,9 +2,6 @@ import path from 'path'
 import fs from 'fs'
 import sharp from 'sharp'
 import chalk from 'chalk'
-import { createRequire } from 'module'
-
-const require = createRequire(import.meta.url)
 
 const defaults = {
   exclude: [],
