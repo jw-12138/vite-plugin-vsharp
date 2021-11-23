@@ -1,17 +1,29 @@
 {
   "name": "vite-plugin-vsharp",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A Vite plugin that compresses static images after each builds by using sharp.js",
   "bin": {
     "vsharp": "vsharp.js"
   },
-  "scripts": {
-    "build": "vite build"
-  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "sharp.js"
+  ],
   "devDependencies": {
     "vite": "^2.6.4"
   },
   "dependencies": {
     "chalk": "^4.1.2",
     "sharp": "^0.29.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jw-12138/vite-plugin-vsharp"
+  },
+  "bugs": {
+    "url": "https://github.com/jw-12138/vite-plugin-vsharp/issues"
+  },
+  "author": "Jacky Wong",
+  "license": "MIT"
 }

@@ -1,4 +1,4 @@
-# vsharp - A Vite plugin that combines [sharp.js](https://www.npmjs.com/package/sharp)
+# vsharp - A Vite plugin that compresses static images after each builds by using [sharp.js](https://www.npmjs.com/package/sharp)
 
 [vsharp](./) is a plugin for [Vite](https://github.com/vitejs/vite), it compresses all the images in the distribution folder automatically after each builds.
 
