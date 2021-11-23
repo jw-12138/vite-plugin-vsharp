@@ -19,7 +19,7 @@ Currently supported sharp functions are:
 ## Installation
 
 ```bash
-npm i vite-plugin-vsharp
+npm i vite-plugin-vsharp -D
 ```
 
 ## Usage
