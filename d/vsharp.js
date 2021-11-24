@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = vsharp;
 
+var _vite = require("vite");
+
 var _path = _interopRequireDefault(require("path"));
 
 var _fs = _interopRequireDefault(require("fs"));
@@ -13,9 +15,26 @@ var _sharp = _interopRequireDefault(require("sharp"));
 
 var _chalk = _interopRequireDefault(require("chalk"));
 
+var _glob = _interopRequireDefault(require("glob"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+var config;
 var defaults = {
+  includePublic: [],
+  excludePublic: [],
   exclude: [],
   '.jpg': {
     quality: 80
@@ -24,7 +43,6 @@ var defaults = {
     quality: 80
   },
   '.png': {
-    compressionLevel: 9,
     quality: 80,
     palette: true
   },
@@ -41,21 +59,135 @@ var extFunction = {
 };
 var supportedFileExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
+var walk = function walk(dir, done) {
+  var results = [];
+
+  _fs["default"].readdir(dir, function (err, list) {
+    if (err) return done(err);
+    var i = 0;
+
+    (function next() {
+      var file = list[i++];
+      if (!file) return done(null, results);
+      file = _path["default"].join(dir, file);
+
+      _fs["default"].stat(file, function (err, stat) {
+        if (stat && stat.isDirectory()) {
+          walk(file, function (err, res) {
+            results = results.concat(res);
+            next();
+          });
+        } else {
+          results.push(file);
+          next();
+        }
+      });
+    })();
+  });
+};
+
 function vsharp() {
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var options = Object.assign({}, defaults, opts);
   return {
     name: 'vsharp',
     apply: 'build',
+    configResolved: function configResolved(res) {
+      config = res;
+    },
     writeBundle: function writeBundle(op, bundle) {
       var outDir = op.dir;
       var keys = Object.keys(bundle);
       keys = keys.map(function (el) {
         return _path["default"].join(outDir, el);
       });
-      var images = getImgs(keys, options);
-      images.forEach(function (el) {
+      var bundle_images = getImgs(keys, options);
+      bundle_images.forEach(function (el) {
         vsharpIt(el, options);
+      });
+      var public_images = [];
+      walk(_path["default"].normalize(config.publicDir), function (err, filesRec) {
+        if (err) {
+          console.log(err);
+          return null;
+        }
+
+        var excludedFiles = [];
+        var includedFiles = [];
+        var scanCount = 0;
+
+        var doSharp = function doSharp() {
+          filesRec.forEach(function (el) {
+            var p = (0, _vite.normalizePath)(el);
+            var relative_p = p.replace(config.root + '/', '');
+
+            if (excludedFiles.includes(relative_p)) {
+              return false;
+            }
+
+            var thisExtname = _path["default"].extname(relative_p);
+
+            if (supportedFileExt.includes(thisExtname)) {
+              public_images.push(relative_p);
+            }
+          });
+          public_images = public_images.concat(includedFiles);
+          public_images = _toConsumableArray(new Set(public_images));
+          public_images.forEach(function (img) {
+            var publicDir = (0, _vite.normalizePath)(config.publicDir).replace(config.root + '/', '');
+            img = img.replace(publicDir, config.build.outDir);
+            vsharpIt(img, options);
+          });
+        };
+
+        if (options.excludePublic.length === 0) {
+          doSharp();
+        }
+
+        options.includePublic.forEach(function (rule, i) {
+          (0, _glob["default"])(rule, {
+            root: options.root
+          }, function (err, files) {
+            if (err) {
+              console.log(err);
+              return false;
+            }
+
+            files.forEach(function (file) {
+              includedFiles.push(file);
+            });
+
+            if (i === options.includePublic.length - 1) {
+              scanCount++;
+
+              if (scanCount === 2) {
+                doSharp();
+              }
+            }
+          });
+        });
+        options.excludePublic.forEach(function (rule, i) {
+          (0, _glob["default"])(rule, {
+            root: options.root
+          }, function (err, files) {
+            if (err) {
+              console.log(err);
+              return false;
+            }
+
+            files.forEach(function (file) {
+              excludedFiles.push(file);
+            });
+
+            if (i === options.excludePublic.length - 1) {
+              scanCount++;
+
+              if (scanCount === 2) {
+                doSharp();
+              }
+            }
+          });
+        });
       });
     }
   };
@@ -77,6 +209,9 @@ function getImgs(data, opts) {
     }
 
     if (supportedFileExt.includes(thisExt)) {
+      el = (0, _vite.normalizePath)(el);
+      el = el.replace(config.root + '/', '');
+
       _imgs.push(el);
     }
   });

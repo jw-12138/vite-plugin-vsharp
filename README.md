@@ -1,6 +1,7 @@
 # vsharp - A Vite plugin that compresses static images after each builds by using [sharp.js](https://www.npmjs.com/package/sharp)
 
-[vsharp](./) is a plugin for [Vite](https://github.com/vitejs/vite), it compresses all the images in the distribution folder automatically after each builds.
+[vsharp](./) is a plugin for [Vite](https://github.com/vitejs/vite), it compresses all the images in the distribution
+folder automatically after each builds.
 
 Currently supported file types are:
 
@@ -11,10 +12,10 @@ Currently supported file types are:
 
 Currently supported sharp functions are:
 
-- `sharp().jpeg()`
-- `sharp().png()`
-- `sharp().gif()`
-- `sharp().webp()`
+- `sharp().jpeg()` [docs for this function](https://sharp.pixelplumbing.com/api-output#jpeg)
+- `sharp().png()` [docs for this function](https://sharp.pixelplumbing.com/api-output#png)
+- `sharp().gif()` [docs for this function](https://sharp.pixelplumbing.com/api-output#gif)
+- `sharp().webp()` [docs for this function](https://sharp.pixelplumbing.com/api-output#webp)
 
 ## Installation
 
@@ -31,32 +32,64 @@ import vsharp from "vite-plugin-vsharp"
 
 export default ({
   plugins: [
-    vsharp($OPTIONS)
+    vsharp()
   ]
 })
 ```
 
-### Exclude specific files
+## Options
 
-```javascript
-// vite.config.js
+1. `exclude {Object[]?}`  
+   
+   This option will exclude image files **only** in bundle processing. Since `Vite` bundles images just in one folder, there
+   is **no need** for you to add any prefix to the pathname. No wildcard glob support for now.
+   
+   ```json5
+   {
+     "exclude": [
+       "bg.jpg", // good
+       "assets/bg.jpg", // bad
+       "bg.<hash>.jpg", // bad
+     ]
+   }
+   ```
 
-import vsharp from "vite-plugin-vsharp"
+2. `excludePublic {Object[]?}` 
 
-export default ({
-  plugins: [
-    vsharp({
-      exclude: 'bg.jpg' // just use the original asset filename
-    })
-  ]
-})
-```
+   This option will exclude image files in the public folder, glob pattern is supported. For this option, you'll need to add prefix according to your root path and configurations. `Vite` uses `public` as default public folder.
+
+   ```json5
+   {
+     "excludePublic": [
+       "public/test_img/*"
+     ]
+   }
+   ```
+   
+3. `includePublic{Object[]?}` 
+
+   This option will include images from a previously excluded folder, it has a higher priority than `excludePublic` and will always overwrite `excludePublic` option.
+
+   ```json5
+   {
+     "includePublic": [
+       "public/test_img/001.jpg"
+     ]
+   }
+   ```
+
+
 
 ## Defaults
 
 ```json
 {
-  "exclude": [],
+  "includePublic": [
+  ],
+  "excludePublic": [
+  ],
+  "exclude": [
+  ],
   ".jpg": {
     "quality": 80
   },
@@ -64,7 +97,6 @@ export default ({
     "quality": 80
   },
   ".png": {
-    "compressionLevel": 9,
     "quality": 80,
     "palette": true
   },
@@ -74,4 +106,5 @@ export default ({
 }
 ```
 
-Every other parameter in currently supported sharp functions by this plugin can be found on [the official sharp docs](https://sharp.pixelplumbing.com/api-constructor).
+Every other parameter in currently supported sharp functions by this plugin can be found
+on [the official sharp docs](https://sharp.pixelplumbing.com/api-constructor).
