@@ -3,8 +3,10 @@ node_modules
 dist
 dist-ssr
 *.local
+.idea
 
 # test
 img
 index.html
 vite.config.js
+public
