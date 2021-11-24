@@ -232,7 +232,7 @@ function vsharpIt(img, opts) {
     var currentSize = info.size;
 
     if (beforeSize < currentSize) {
-      console.log("[".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
+      console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
       return false;
     }
 
@@ -245,7 +245,7 @@ function vsharpIt(img, opts) {
       }
 
       var shrinkRatio = (-((beforeSize - currentSize) / beforeSize) * 100).toFixed(2);
-      console.log("[".concat(_chalk["default"].green(img), "] optimized, ").concat(_chalk["default"].yellow(bytesToSize(beforeSize)), " <<").concat(_chalk["default"].green(shrinkRatio + '%'), ">> ").concat(_chalk["default"].yellow(bytesToSize(currentSize))));
+      console.log("vsharp: [".concat(_chalk["default"].green(img), "] ").concat(_chalk["default"].yellow(bytesToSize(beforeSize)), " <<").concat(_chalk["default"].green(shrinkRatio + '%'), ">> ").concat(_chalk["default"].yellow(bytesToSize(currentSize))));
     });
   });
 }

@@ -214,7 +214,7 @@ function vsharpIt(img, opts) {
     
     if (beforeSize < currentSize) {
       console.log(
-        `[${chalk.green(img)}], current size is bigger after <sharp> processed, skipping...`
+        `vsharp: [${chalk.green(img)}], current size is bigger after <sharp> processed, skipping...`
       )
       return false
     }
@@ -229,7 +229,7 @@ function vsharpIt(img, opts) {
       ).toFixed(2)
       
       console.log(
-        `[${chalk.green(img)}] optimized, ${chalk.yellow(
+        `vsharp: [${chalk.green(img)}] ${chalk.yellow(
           bytesToSize(beforeSize)
         )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
           bytesToSize(currentSize)
