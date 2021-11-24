@@ -3,6 +3,22 @@
 [vsharp](./) is a plugin for [Vite](https://github.com/vitejs/vite), it compresses all the images in the distribution
 folder automatically after each builds.
 
+```text
+> npx vite build
+
+vite v2.6.14 
+✓ 1 modules transformed.
+Generated an empty chunk: "index"
+dist/index.html   0.30 KiB
+vsharp: [dist/img/2_1.1.2.jpg] 725 KB <<-80.38%>> 142 KB
+vsharp: [dist/exclude_img/2_1.1.2.jpg] 725 KB <<-80.38%>> 142 KB
+vsharp: [dist/img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
+vsharp: [dist/exclude_img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
+vsharp: [dist/img/times.png] 4.0 MB <<-72.98%>> 1.1 MB
+```
+
+
+
 Currently supported file types are:
 
 - `.jpg/.jpeg`
