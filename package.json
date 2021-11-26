@@ -9,7 +9,7 @@
     "sharp.js"
   ],
   "scripts": {
-    "dev": "npx babel vsharp.js --watch --out-file ./d/vsharp.js",
+    "dev": "npx babel vsharp.js --watch --out-file ./d/vsharp.js --no-comments",
     "build": "npx babel vsharp.js --out-file ./d/vsharp.js",
     "test-run": "npx vite build",
     "test-dev": "npx vite -d"

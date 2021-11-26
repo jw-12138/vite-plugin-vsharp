@@ -96,23 +96,8 @@ function vsharp() {
     configResolved: function configResolved(res) {
       config = res;
     },
-    configureServer: function configureServer(server) {
-      server.middlewares.use(function (req, res, next) {
-        var p = (0, _vite.normalizePath)(config.publicDir) + req._parsedUrl.pathname;
-
-        p = p.replace(config.root + '/', '');
-
-        var thisExtname = _path["default"].extname(p);
-
-        if (supportedFileExt.includes(thisExtname)) {
-          sendBuffer(req, res, next, p, options);
-          return false;
-        }
-
-        next();
-      });
-    },
     writeBundle: function writeBundle(op, bundle) {
+      console.log(bundle);
       var outDir = op.dir;
       var keys = Object.keys(bundle);
       keys = keys.map(function (el) {

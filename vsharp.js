@@ -74,20 +74,21 @@ export default function vsharp(opts = {}) {
     configResolved(res) {
       config = res
     },
-    configureServer(server){
-      server.middlewares.use((req, res, next) => {
-        let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
-        p = p.replace(config.root + '/', '')
-        let thisExtname = path.extname(p)
-        if(supportedFileExt.includes(thisExtname)){
-          sendBuffer(req, res, next, p, options)
-          return false
-        }
-  
-        next()
-      })
-    },
+    // configureServer(server){
+    //   server.middlewares.use((req, res, next) => {
+    //     let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
+    //     p = p.replace(config.root + '/', '')
+    //     let thisExtname = path.extname(p)
+    //     if(supportedFileExt.includes(thisExtname)){
+    //       sendBuffer(req, res, next, p, options)
+    //       return false
+    //     }
+    //
+    //     next()
+    //   })
+    // },
     writeBundle(op, bundle) {
+      console.log(bundle)
       let outDir = op.dir
       let keys = Object.keys(bundle)
       keys = keys.map((el) => {
