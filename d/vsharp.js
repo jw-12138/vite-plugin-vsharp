@@ -17,6 +17,8 @@ var _chalk = _interopRequireDefault(require("chalk"));
 
 var _glob = _interopRequireDefault(require("glob"));
 
+var _mimeTypes = _interopRequireDefault(require("mime-types"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -91,11 +93,24 @@ function vsharp() {
   var options = Object.assign({}, defaults, opts);
   return {
     name: 'vsharp',
-    apply: 'build',
     configResolved: function configResolved(res) {
       config = res;
     },
+    // configureServer(server){
+    //   server.middlewares.use((req, res, next) => {
+    //     let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
+    //     p = p.replace(config.root + '/', '')
+    //     let thisExtname = path.extname(p)
+    //     if(supportedFileExt.includes(thisExtname)){
+    //       sendBuffer(req, res, next, p, options)
+    //       return false
+    //     }
+    //
+    //     next()
+    //   })
+    // },
     writeBundle: function writeBundle(op, bundle) {
+      console.log(bundle);
       var outDir = op.dir;
       var keys = Object.keys(bundle);
       keys = keys.map(function (el) {
@@ -193,6 +208,14 @@ function vsharp() {
   };
 }
 
+function sendBuffer(req, res, next, p, opts) {
+  var search = req._parsedUrl.search.split('?');
+
+  search = search[1];
+  var searchObject = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}');
+  console.log(searchObject);
+}
+
 function getImgs(data, opts) {
   var _imgs = [];
   data.forEach(function (el) {
@@ -247,6 +270,26 @@ function vsharpIt(img, opts) {
       var shrinkRatio = (-((beforeSize - currentSize) / beforeSize) * 100).toFixed(2);
       console.log("vsharp: [".concat(_chalk["default"].green(img), "] ").concat(_chalk["default"].yellow(bytesToSize(beforeSize)), " <<").concat(_chalk["default"].green(shrinkRatio + '%'), ">> ").concat(_chalk["default"].yellow(bytesToSize(currentSize))));
     });
+  });
+}
+
+function vsharpDev(img, opts) {
+  var extname = _path["default"].extname(img);
+
+  var sfunc = extFunction[extname];
+  (0, _sharp["default"])(img)[sfunc](opts[extname]).toBuffer(function (err, buffer, info) {
+    if (err) {
+      console.log(err);
+    }
+
+    var beforeSize = _fs["default"].statSync(img).size;
+
+    var currentSize = info.size;
+
+    if (beforeSize < currentSize) {
+      console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
+      return false;
+    }
   });
 }
 

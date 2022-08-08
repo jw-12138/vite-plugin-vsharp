@@ -4,6 +4,7 @@ import fs from 'fs'
 import sharp from 'sharp'
 import chalk from 'chalk'
 import glob from 'glob'
+import mime from 'mime-types'
 
 let config
 
@@ -70,11 +71,24 @@ export default function vsharp(opts = {}) {
   const options = Object.assign({}, defaults, opts)
   return {
     name: 'vsharp',
-    apply: 'build',
     configResolved(res) {
       config = res
     },
+    // configureServer(server){
+    //   server.middlewares.use((req, res, next) => {
+    //     let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
+    //     p = p.replace(config.root + '/', '')
+    //     let thisExtname = path.extname(p)
+    //     if(supportedFileExt.includes(thisExtname)){
+    //       sendBuffer(req, res, next, p, options)
+    //       return false
+    //     }
+    //
+    //     next()
+    //   })
+    // },
     writeBundle(op, bundle) {
+      console.log(bundle)
       let outDir = op.dir
       let keys = Object.keys(bundle)
       keys = keys.map((el) => {
@@ -176,6 +190,14 @@ export default function vsharp(opts = {}) {
   }
 }
 
+function sendBuffer(req, res, next, p, opts){
+  let search = req._parsedUrl.search.split('?')
+  search = search[1]
+  let searchObject = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}')
+  
+  console.log(searchObject)
+}
+
 function getImgs(data, opts) {
   let _imgs = []
   data.forEach((el) => {
@@ -236,6 +258,28 @@ function vsharpIt(img, opts) {
         )}`
       )
     })
+  })
+}
+
+function vsharpDev(img, opts) {
+  let extname = path.extname(img)
+  let sfunc = extFunction[extname]
+  
+  sharp(img)
+    [sfunc](opts[extname]).toBuffer((err, buffer, info) => {
+    if (err) {
+      console.log(err)
+    }
+    let beforeSize = fs.statSync(img).size
+    let currentSize = info.size
+    
+    if (beforeSize < currentSize) {
+      console.log(
+        `vsharp: [${chalk.green(img)}], current size is bigger after <sharp> processed, skipping...`
+      )
+      return false
+    }
+    
   })
 }
 
