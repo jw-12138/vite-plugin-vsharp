@@ -93,6 +93,19 @@ export default ({
      ]
    }
    ```
+   
+4. Resize
+   - width
+   - height
+   - scale (will overwrite `width` and `height`)
+
+   ```json
+   {
+     "width": 800,
+     "height": 800,
+     "scale": 0.8
+   }
+   ```
 
 
 
