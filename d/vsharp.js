@@ -35,6 +35,9 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var config;
 var defaults = {
+  scale: undefined,
+  width: undefined,
+  height: undefined,
   includePublic: [],
   excludePublic: [],
   exclude: [],
@@ -96,21 +99,7 @@ function vsharp() {
     configResolved: function configResolved(res) {
       config = res;
     },
-    // configureServer(server){
-    //   server.middlewares.use((req, res, next) => {
-    //     let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
-    //     p = p.replace(config.root + '/', '')
-    //     let thisExtname = path.extname(p)
-    //     if(supportedFileExt.includes(thisExtname)){
-    //       sendBuffer(req, res, next, p, options)
-    //       return false
-    //     }
-    //
-    //     next()
-    //   })
-    // },
     writeBundle: function writeBundle(op, bundle) {
-      console.log(bundle);
       var outDir = op.dir;
       var keys = Object.keys(bundle);
       keys = keys.map(function (el) {
@@ -245,30 +234,56 @@ function vsharpIt(img, opts) {
   var extname = _path["default"].extname(img);
 
   var sfunc = extFunction[extname];
-  (0, _sharp["default"])(img)[sfunc](opts[extname]).toBuffer(function (err, buffer, info) {
-    if (err) {
-      console.log(err);
-    }
-
+  var s_img = (0, _sharp["default"])(img);
+  s_img.metadata().then(function (metadata) {
     var beforeSize = _fs["default"].statSync(img).size;
 
-    var currentSize = info.size;
+    var currentWidth = metadata.width;
+    var targetWidth = metadata.width;
+    var targetHeight = metadata.height;
 
-    if (beforeSize < currentSize) {
-      console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
-      return false;
+    if (opts.width !== undefined && opts.height !== undefined) {
+      targetWidth = opts.width;
+      targetHeight = opts.height;
+    } else if (opts.width === undefined && opts.height === undefined) {
+      targetWidth = metadata.width;
+      targetHeight = metadata.height;
+    } else if (opts.width !== undefined && opts.height === undefined) {
+      targetWidth = opts.width;
+      targetHeight = null;
+    } else if (opts.width === undefined && opts.height !== undefined) {
+      targetWidth = null;
+      targetHeight = opts.height;
     }
 
-    _fs["default"].writeFile(img, buffer, {
-      flag: 'w+'
-    }, function (err) {
+    if (opts.scale !== undefined) {
+      targetWidth = Math.floor(opts.scale * currentWidth);
+      targetHeight = null;
+    }
+
+    return s_img.resize(targetWidth, targetHeight)[sfunc](opts[extname]).toBuffer(function (err, buffer, info) {
       if (err) {
         console.log(err);
-        return;
       }
 
-      var shrinkRatio = (-((beforeSize - currentSize) / beforeSize) * 100).toFixed(2);
-      console.log("vsharp: [".concat(_chalk["default"].green(img), "] ").concat(_chalk["default"].yellow(bytesToSize(beforeSize)), " <<").concat(_chalk["default"].green(shrinkRatio + '%'), ">> ").concat(_chalk["default"].yellow(bytesToSize(currentSize))));
+      var currentSize = info.size;
+
+      if (beforeSize < currentSize) {
+        console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
+        return false;
+      }
+
+      _fs["default"].writeFile(img, buffer, {
+        flag: 'w+'
+      }, function (err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        var shrinkRatio = (-((beforeSize - currentSize) / beforeSize) * 100).toFixed(2);
+        console.log("vsharp: [".concat(_chalk["default"].green(img), "] ").concat(_chalk["default"].yellow(bytesToSize(beforeSize)), " <<").concat(_chalk["default"].green(shrinkRatio + '%'), ">> ").concat(_chalk["default"].yellow(bytesToSize(currentSize))));
+      });
     });
   });
 }
