@@ -222,7 +222,7 @@ function vsharpIt(img, opts) {
   let extname = path.extname(img)
   let sfunc = extFunction[extname]
 
-  let s_img = sharp(img)
+  let s_img = sharp(img, { animated: true })
 
   s_img.metadata().then(metadata => {
     let beforeSize = fs.statSync(img).size
@@ -258,7 +258,7 @@ function vsharpIt(img, opts) {
 
       if (beforeSize < currentSize) {
         console.log(
-          `vsharp: [${chalk.green(img)}], current size is bigger after <sharp> processed, skipping...`
+          `vsharp: [${chalk.green(img)}], current size (${bytesToSize(currentSize)}) is bigger after <sharp> processed, skipping...`
         )
         return false
       }

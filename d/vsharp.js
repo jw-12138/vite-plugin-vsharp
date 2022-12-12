@@ -234,7 +234,9 @@ function vsharpIt(img, opts) {
   var extname = _path["default"].extname(img);
 
   var sfunc = extFunction[extname];
-  var s_img = (0, _sharp["default"])(img);
+  var s_img = (0, _sharp["default"])(img, {
+    animated: true
+  });
   s_img.metadata().then(function (metadata) {
     var beforeSize = _fs["default"].statSync(img).size;
 
@@ -269,7 +271,7 @@ function vsharpIt(img, opts) {
       var currentSize = info.size;
 
       if (beforeSize < currentSize) {
-        console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size is bigger after <sharp> processed, skipping..."));
+        console.log("vsharp: [".concat(_chalk["default"].green(img), "], current size (").concat(bytesToSize(currentSize), ") is bigger after <sharp> processed, skipping..."));
         return false;
       }
 
