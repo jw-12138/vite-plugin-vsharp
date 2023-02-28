@@ -20,7 +20,7 @@ vsharp: [dist/img/times.png] 4.0 MB <<-72.98%>> 1.1 MB
 
 ## ⚠️⚠️⚠️ For Vite 4 Users
 
-~~Looks like Vite 4 bundles things differently than previous versions, the filename will be like `<filename>-<hash>.<ext>` instead of `<filename>.<hash>.<ext>`, and this will affect the `exclude` option of this plugin (see https://github.com/jw-12138/vite-plugin-vsharp/issues/7). To resolve this problem, One option is to downgrade Vite to version 3 (`npm i vite@3`), and another is to add a little config in your `vite.config.js`: ~~
+<del>Looks like Vite 4 bundles things differently than previous versions, the filename will be like `<filename>-<hash>.<ext>` instead of `<filename>.<hash>.<ext>`, and this will affect the `exclude` option of this plugin (see https://github.com/jw-12138/vite-plugin-vsharp/issues/7). To resolve this problem, One option is to downgrade Vite to version 3 (`npm i vite@3`), and another is to add a little config in your `vite.config.js`: </del>
 
 VSharp(`>1.4.0`) can now detect the filename format automatically, so you don't need to do anything with the config file.
 
