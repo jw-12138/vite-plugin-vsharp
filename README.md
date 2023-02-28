@@ -24,25 +24,6 @@ vsharp: [dist/img/times.png] 4.0 MB <<-72.98%>> 1.1 MB
 
 VSharp(`>1.4.0`) can now detect the filename format automatically, so you don't need to do anything with the config file.
 
-```javascript
-// deprecated at >1.4.0
-import vsharp from "vite-plugin-vsharp"
-export default ({
-  // ⬇️ from here
-  build: {
-    rollupOptions: {
-      output: {
-        assetFileNames: `assets/[name].[hash].[ext]`
-      }
-    }
-  },
-  // ⬆️ to here
-  plugins: [
-    vsharp()
-  ]
-})
-```
-
 --- 
 
 Currently supported file types are:
