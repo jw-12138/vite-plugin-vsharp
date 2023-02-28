@@ -1,4 +1,4 @@
-import {normalizePath} from 'vite'
+import { normalizePath } from 'vite'
 import path from 'path'
 import fs from 'fs'
 import sharp from 'sharp'
@@ -6,6 +6,18 @@ import chalk from 'chalk'
 import glob from 'glob'
 import mime from 'mime-types'
 
+function getViteVersion(root) {
+  let pkg = fs.readFileSync(path.join(root, 'package.json'))
+  pkg = JSON.parse(pkg)
+  if (pkg.devDependencies.vite) {
+    return pkg.devDependencies.vite
+  } else if (pkg.dependencies.vite) {
+    return pkg.dependencies.vite
+  }
+  return ''
+}
+
+let vite_version
 let config
 
 const defaults = {
@@ -70,20 +82,12 @@ export default function vsharp(opts = {}) {
     name: 'vsharp',
     configResolved(res) {
       config = res
+      vite_version = vite_version
+        ? parseInt(
+            getViteVersion(config.root).replace(/^\D+/, '').split('.')[0]
+          )
+        : null
     },
-    // configureServer(server){
-    //   server.middlewares.use((req, res, next) => {
-    //     let p = normalizePath(config.publicDir) + req._parsedUrl.pathname
-    //     p = p.replace(config.root + '/', '')
-    //     let thisExtname = path.extname(p)
-    //     if(supportedFileExt.includes(thisExtname)){
-    //       sendBuffer(req, res, next, p, options)
-    //       return false
-    //     }
-    //
-    //     next()
-    //   })
-    // },
     writeBundle(op, bundle) {
       let outDir = op.dir
       let keys = Object.keys(bundle)
@@ -99,7 +103,11 @@ export default function vsharp(opts = {}) {
       let public_images = []
       walk(path.normalize(config.publicDir), function (err, filesRec) {
         if (err) {
-          console.log(err)
+          if (err.code === 'ENOENT') {
+            console.log(chalk.yellow('vsharp: no public directory'))
+            return null
+          }
+          console.log('walk error: ', err)
           return null
         }
 
@@ -109,7 +117,7 @@ export default function vsharp(opts = {}) {
         let scanCount = 0
 
         let doSharp = function () {
-          filesRec.forEach(el => {
+          filesRec.forEach((el) => {
             let p = normalizePath(el)
             let relative_p = p.replace(config.root + '/', '')
 
@@ -127,8 +135,11 @@ export default function vsharp(opts = {}) {
           public_images = public_images.concat(includedFiles)
           public_images = [...new Set(public_images)]
 
-          public_images.forEach(img => {
-            let publicDir = normalizePath(config.publicDir).replace(config.root + '/', '')
+          public_images.forEach((img) => {
+            let publicDir = normalizePath(config.publicDir).replace(
+              config.root + '/',
+              ''
+            )
             img = img.replace(publicDir, config.build.outDir)
             vsharpIt(img, options)
           })
@@ -139,47 +150,55 @@ export default function vsharp(opts = {}) {
         }
 
         options.includePublic.forEach((rule, i) => {
-          glob(rule, {
-            root: options.root
-          }, function (err, files) {
-            if (err) {
-              console.log(err)
-              return false
-            }
-            files.forEach(file => {
-              includedFiles.push(file)
-            })
+          glob(
+            rule,
+            {
+              root: options.root
+            },
+            function (err, files) {
+              if (err) {
+                console.log(err)
+                return false
+              }
+              files.forEach((file) => {
+                includedFiles.push(file)
+              })
 
-            if (i === options.includePublic.length - 1) {
-              scanCount++
+              if (i === options.includePublic.length - 1) {
+                scanCount++
 
-              if (scanCount === 2) {
-                doSharp()
+                if (scanCount === 2) {
+                  doSharp()
+                }
               }
             }
-          })
+          )
         })
 
         options.excludePublic.forEach((rule, i) => {
-          glob(rule, {
-            root: options.root
-          }, function (err, files) {
-            if (err) {
-              console.log(err)
-              return false
-            }
-            files.forEach(file => {
-              excludedFiles.push(file)
-            })
+          glob(
+            rule,
+            {
+              root: options.root
+            },
+            function (err, files) {
+              if (err) {
+                console.log(err)
+                return false
+              }
+              files.forEach((file) => {
+                excludedFiles.push(file)
+              })
 
-            if (i === options.excludePublic.length - 1) {
-              scanCount++
+              if (i === options.excludePublic.length - 1) {
+                scanCount++
 
-              if (scanCount === 2) {
-                doSharp()
+                if (scanCount === 2) {
+                  doSharp()
+                }
               }
             }
-          })
+          )
         })
       })
     }
@@ -189,7 +208,14 @@ export default function vsharp(opts = {}) {
 function sendBuffer(req, res, next, p, opts) {
   let search = req._parsedUrl.search.split('?')
   search = search[1]
-  let searchObject = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+  let searchObject = JSON.parse(
+    '{"' +
+      decodeURI(search)
+        .replace(/"/g, '\\"')
+        .replace(/&/g, '","')
+        .replace(/=/g, '":"') +
+      '"}'
+  )
 
   console.log(searchObject)
 }
@@ -198,7 +224,12 @@ function getImgs(data, opts) {
   let _imgs = []
   data.forEach((el) => {
     let thisExt = path.extname(el)
-    let thisName = path.basename(el).split('.')
+    let thisName
+    if (vite_version < 4) {
+      thisName = path.basename(el).split('.')
+    } else {
+      thisName = path.basename(el).split('-')
+    }
 
     thisName = thisName.reverse()
     thisName.splice(0, 2)
@@ -224,7 +255,7 @@ function vsharpIt(img, opts) {
 
   let s_img = sharp(img, { animated: true })
 
-  s_img.metadata().then(metadata => {
+  s_img.metadata().then((metadata) => {
     let beforeSize = fs.statSync(img).size
     let currentWidth = metadata.width
     let targetWidth = metadata.width
@@ -249,38 +280,43 @@ function vsharpIt(img, opts) {
       targetHeight = null
     }
 
-    return s_img.resize(targetWidth, targetHeight)[sfunc](opts[extname]).toBuffer((err, buffer, info) => {
-      if (err) {
-        console.log(err)
-      }
-
-      let currentSize = info.size
-
-      if (beforeSize < currentSize) {
-        console.log(
-          `vsharp: [${chalk.green(img)}], current size (${bytesToSize(currentSize)}) is bigger after <sharp> processed, skipping...`
-        )
-        return false
-      }
-      fs.writeFile(img, buffer, {flag: 'w+'}, (err) => {
+    return s_img
+      .resize(targetWidth, targetHeight)
+      [sfunc](opts[extname])
+      .toBuffer((err, buffer, info) => {
         if (err) {
           console.log(err)
-          return
         }
 
-        let shrinkRatio = (
-          -((beforeSize - currentSize) / beforeSize) * 100
-        ).toFixed(2)
+        let currentSize = info.size
 
-        console.log(
-          `vsharp: [${chalk.green(img)}] ${chalk.yellow(
-            bytesToSize(beforeSize)
-          )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
-            bytesToSize(currentSize)
-          )}`
-        )
+        if (beforeSize < currentSize) {
+          console.log(
+            `vsharp: [${chalk.green(img)}], current size (${bytesToSize(
+              currentSize
+            )}) is bigger after <sharp> processed, skipping...`
+          )
+          return false
+        }
+        fs.writeFile(img, buffer, { flag: 'w+' }, (err) => {
+          if (err) {
+            console.log(err)
+            return
+          }
+
+          let shrinkRatio = (
+            -((beforeSize - currentSize) / beforeSize) * 100
+          ).toFixed(2)
+
+          console.log(
+            `vsharp: [${chalk.green(img)}] ${chalk.yellow(
+              bytesToSize(beforeSize)
+            )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
+              bytesToSize(currentSize)
+            )}`
+          )
+        })
       })
-    })
   })
 }
 
@@ -289,21 +325,23 @@ function vsharpDev(img, opts) {
   let sfunc = extFunction[extname]
 
   sharp(img)
-    [sfunc](opts[extname]).toBuffer((err, buffer, info) => {
-    if (err) {
-      console.log(err)
-    }
-    let beforeSize = fs.statSync(img).size
-    let currentSize = info.size
+    [sfunc](opts[extname])
+    .toBuffer((err, buffer, info) => {
+      if (err) {
+        console.log(err)
+      }
+      let beforeSize = fs.statSync(img).size
+      let currentSize = info.size
 
-    if (beforeSize < currentSize) {
-      console.log(
-        `vsharp: [${chalk.green(img)}], current size is bigger after <sharp> processed, skipping...`
-      )
-      return false
-    }
-
-  })
+      if (beforeSize < currentSize) {
+        console.log(
+          `vsharp: [${chalk.green(
+            img
+          )}], current size is bigger after <sharp> processed, skipping...`
+        )
+        return false
+      }
+    })
 }
 
 let units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']

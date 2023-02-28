@@ -18,7 +18,7 @@
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
-    "vite": "^2.9.14"
+    "vite": "^3.2.5"
   },
   "peerDependencies": {
     "vite": ">2.0.0-0"

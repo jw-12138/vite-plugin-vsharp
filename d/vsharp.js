@@ -33,6 +33,21 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function getViteVersion(root) {
+  var pkg = _fs["default"].readFileSync(_path["default"].join(root, 'package.json'));
+
+  pkg = JSON.parse(pkg);
+
+  if (pkg.devDependencies.vite) {
+    return pkg.devDependencies.vite;
+  } else if (pkg.dependencies.vite) {
+    return pkg.dependencies.vite;
+  }
+
+  return '';
+}
+
+var vite_version;
 var config;
 var defaults = {
   scale: undefined,
@@ -98,6 +113,7 @@ function vsharp() {
     name: 'vsharp',
     configResolved: function configResolved(res) {
       config = res;
+      vite_version = vite_version ? parseInt(getViteVersion(config.root).replace(/^\D+/, '').split('.')[0]) : null;
     },
     writeBundle: function writeBundle(op, bundle) {
       var outDir = op.dir;
@@ -112,7 +128,12 @@ function vsharp() {
       var public_images = [];
       walk(_path["default"].normalize(config.publicDir), function (err, filesRec) {
         if (err) {
-          console.log(err);
+          if (err.code === 'ENOENT') {
+            console.log(_chalk["default"].yellow('vsharp: no public directory'));
+            return null;
+          }
+
+          console.log('walk error: ', err);
           return null;
         }
 
@@ -210,7 +231,13 @@ function getImgs(data, opts) {
   data.forEach(function (el) {
     var thisExt = _path["default"].extname(el);
 
-    var thisName = _path["default"].basename(el).split('.');
+    var thisName;
+
+    if (vite_version < 4) {
+      thisName = _path["default"].basename(el).split('.');
+    } else {
+      thisName = _path["default"].basename(el).split('-');
+    }
 
     thisName = thisName.reverse();
     thisName.splice(0, 2);
