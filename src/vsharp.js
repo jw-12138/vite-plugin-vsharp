@@ -31,6 +31,11 @@ const defaults = {
   },
   '.webp': {
     lossless: true
+  },
+  preserveMetadata: {
+    orientation: false,
+    icc: false,
+    exif: false
   }
 }
 
@@ -214,7 +219,6 @@ function vsharpIt(img, opts) {
     let targetWidth = metadata.width
     let targetHeight = metadata.height
 
-    //
     if (opts.width !== undefined && opts.height !== undefined) {
       targetWidth = opts.width
       targetHeight = opts.height
@@ -237,6 +241,23 @@ function vsharpIt(img, opts) {
     let outBuffer = s_img
     outBuffer = outBuffer.resize(targetWidth, targetHeight)
     outBuffer = outBuffer[sfunc](opts[extname])
+
+    if (typeof opts.preserveMetadata === 'object') {
+      let preservedMetadata = {}
+      if (opts.preserveMetadata.orientation) {
+        preservedMetadata.orientation = metadata.orientation
+      }
+
+      if (opts.preserveMetadata.icc) {
+        preservedMetadata.icc = metadata.icc
+      }
+
+      if (opts.preserveMetadata.exif) {
+        preservedMetadata.exif = metadata.exif
+      }
+
+      outBuffer = outBuffer.withMetadata(preservedMetadata)
+    }
 
     return outBuffer.toBuffer((err, buffer, info) => {
       if (err) {
@@ -268,7 +289,7 @@ function vsharpIt(img, opts) {
             bytesToSize(previousSize)
           )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
             bytesToSize(currentSize)
-          )}${unifyFormatMessage}`
+          )}`
         )
       })
     })

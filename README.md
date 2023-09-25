@@ -139,6 +139,11 @@ export default ({
   },
   ".webp": {
     "lossless": true
+  },
+  preserveMetadata: {
+    orientation: false,
+    icc: false,
+    exif: false
   }
 }
 ```
