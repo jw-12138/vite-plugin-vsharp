@@ -1,7 +1,5 @@
 # VSharp - A Vite Plugin for Compressing Static Images with [Sharp.js](https://www.npmjs.com/package/sharp)
 
-> 
-
 [vsharp](https://github.com/jw-12138/vite-plugin-vsharp) is a plugin for [Vite](https://github.com/vitejs/vite), it allows you to compress static images after each build, using the powerful Sharp.js library. It is a great way to reduce the size of your images and improve the performance of your website or application. With VSharp, you can easily optimize the size of your images without sacrificing quality.
 
 ```text
@@ -17,12 +15,6 @@ vsharp: [dist/img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
 vsharp: [dist/exclude_img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
 vsharp: [dist/img/times.png] 4.0 MB <<-72.98%>> 1.1 MB
 ```
-
-## ⚠️⚠️⚠️ For Vite 4 Users
-
-<del>Looks like Vite 4 bundles things differently than previous versions, the filename will be like `<filename>-<hash>.<ext>` instead of `<filename>.<hash>.<ext>`, and this will affect the `exclude` option of this plugin (see https://github.com/jw-12138/vite-plugin-vsharp/issues/7). To resolve this problem, One option is to downgrade Vite to version 3 (`npm i vite@3`), and another is to add a little config in your `vite.config.js`: </del>
-
-VSharp(`>1.4.0`) can now detect the filename format automatically, so you don't need to do anything with the config file.
 
 --- 
 
@@ -55,7 +47,9 @@ import vsharp from "vite-plugin-vsharp"
 
 export default ({
   plugins: [
-    vsharp()
+    vsharp(
+      // {...options}
+    )
   ]
 })
 ```
@@ -114,12 +108,24 @@ export default ({
      "scale": 0.8
    }
    ```
+   
+5. Preserve Metadata
+   
+   Now we only support `orientation`, which will preserve the orientation of the image. 
+   
+   ```json
+   {
+     "preserveMetadata": {
+       "orientation": true
+     }
+   }
+   ```
 
 
 
 ## Defaults
 
-```json5
+```json
 {
   "includePublic": [
   ],
@@ -140,8 +146,8 @@ export default ({
   ".webp": {
     "lossless": true
   },
-  preserveMetadata: {
-    orientation: false
+  "preserveMetadata": {
+    "orientation": false
   }
 }
 ```
