@@ -1,12 +1,13 @@
 node_modules
 .DS_Store
-dist
+test/dist
 dist-ssr
 *.local
 .idea
 
 # test
-img
+test/img
 index.html
-vite.config.js
+test/vite.config.js
 public
+test

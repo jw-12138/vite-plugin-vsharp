@@ -2,26 +2,24 @@
   "name": "vite-plugin-vsharp",
   "version": "1.4.2",
   "description": "A Vite plugin that compresses static images after each builds by using sharp.js",
-  "main": "./d/vsharp.js",
+  "main": "./lib/vsharp.js",
   "keywords": [
     "vite",
     "vite-plugin",
     "sharp.js"
   ],
   "scripts": {
-    "dev": "npx babel vsharp.js --watch --out-file ./d/vsharp.js --no-comments",
-    "build": "npx babel vsharp.js --out-file ./d/vsharp.js",
-    "test-run": "npx vite build",
-    "test-dev": "npx vite -d"
+    "dev": "npx babel src --watch --out-dir lib --no-comments",
+    "build": "npx babel src --out-dir lib --no-comments"
   },
   "devDependencies": {
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
-    "vite": "^3.2.5"
+    "vite": "^3.2.7"
   },
   "peerDependencies": {
-    "vite": ">2.0.0-0"
+    "vite": "3.2.7"
   },
   "dependencies": {
     "chalk": "^4.1.2",

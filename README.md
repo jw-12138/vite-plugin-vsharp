@@ -119,7 +119,7 @@ export default ({
 
 ## Defaults
 
-```json
+```json5
 {
   "includePublic": [
   ],

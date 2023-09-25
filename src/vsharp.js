@@ -1,21 +1,13 @@
-import { normalizePath } from 'vite'
+import {normalizePath} from 'vite'
 import path from 'path'
 import fs from 'fs'
 import sharp from 'sharp'
 import chalk from 'chalk'
 import glob from 'glob'
-import mime from 'mime-types'
 
-function getViteVersion(root) {
-  let pkg = fs.readFileSync(path.join(root, 'package.json'))
-  pkg = JSON.parse(pkg)
-  if (pkg.devDependencies.vite) {
-    return pkg.devDependencies.vite
-  } else if (pkg.dependencies.vite) {
-    return pkg.dependencies.vite
-  }
-  return ''
-}
+import {walk} from './utils/walk'
+import {getViteVersion} from './utils/getViteVersion'
+import {bytesToSize} from './utils/bytesToSize'
 
 let vite_version
 let config
@@ -52,30 +44,6 @@ const extFunction = {
 
 const supportedFileExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 
-const walk = function (dir, done) {
-  var results = []
-  fs.readdir(dir, function (err, list) {
-    if (err) return done(err)
-    var i = 0
-    ;(function next() {
-      var file = list[i++]
-      if (!file) return done(null, results)
-      file = path.join(dir, file)
-      fs.stat(file, function (err, stat) {
-        if (stat && stat.isDirectory()) {
-          walk(file, function (err, res) {
-            results = results.concat(res)
-            next()
-          })
-        } else {
-          results.push(file)
-          next()
-        }
-      })
-    })()
-  })
-}
-
 export default function vsharp(opts = {}) {
   const options = Object.assign({}, defaults, opts)
   return {
@@ -84,8 +52,8 @@ export default function vsharp(opts = {}) {
       config = res
       vite_version = vite_version
         ? parseInt(
-            getViteVersion(config.root).replace(/^\D+/, '').split('.')[0]
-          )
+          getViteVersion(config.root).replace(/^\D+/, '').split('.')[0]
+        )
         : null
     },
     writeBundle(op, bundle) {
@@ -205,21 +173,6 @@ export default function vsharp(opts = {}) {
   }
 }
 
-function sendBuffer(req, res, next, p, opts) {
-  let search = req._parsedUrl.search.split('?')
-  search = search[1]
-  let searchObject = JSON.parse(
-    '{"' +
-      decodeURI(search)
-        .replace(/"/g, '\\"')
-        .replace(/&/g, '","')
-        .replace(/=/g, '":"') +
-      '"}'
-  )
-
-  console.log(searchObject)
-}
-
 function getImgs(data, opts) {
   let _imgs = []
   data.forEach((el) => {
@@ -253,14 +206,15 @@ function vsharpIt(img, opts) {
   let extname = path.extname(img)
   let sfunc = extFunction[extname]
 
-  let s_img = sharp(img, { animated: true })
+  let s_img = sharp(img, {animated: true})
 
   s_img.metadata().then((metadata) => {
-    let beforeSize = fs.statSync(img).size
+    let previousSize = fs.statSync(img).size
     let currentWidth = metadata.width
     let targetWidth = metadata.width
     let targetHeight = metadata.height
 
+    //
     if (opts.width !== undefined && opts.height !== undefined) {
       targetWidth = opts.width
       targetHeight = opts.height
@@ -280,79 +234,43 @@ function vsharpIt(img, opts) {
       targetHeight = null
     }
 
-    return s_img
-      .resize(targetWidth, targetHeight)
-      [sfunc](opts[extname])
-      .toBuffer((err, buffer, info) => {
-        if (err) {
-          console.log(err)
-        }
+    let outBuffer = s_img
+    outBuffer = outBuffer.resize(targetWidth, targetHeight)
+    outBuffer = outBuffer[sfunc](opts[extname])
 
-        let currentSize = info.size
-
-        if (beforeSize < currentSize) {
-          console.log(
-            `vsharp: [${chalk.green(img)}], current size (${bytesToSize(
-              currentSize
-            )}) is bigger after <sharp> processed, skipping...`
-          )
-          return false
-        }
-        fs.writeFile(img, buffer, { flag: 'w+' }, (err) => {
-          if (err) {
-            console.log(err)
-            return
-          }
-
-          let shrinkRatio = (
-            -((beforeSize - currentSize) / beforeSize) * 100
-          ).toFixed(2)
-
-          console.log(
-            `vsharp: [${chalk.green(img)}] ${chalk.yellow(
-              bytesToSize(beforeSize)
-            )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
-              bytesToSize(currentSize)
-            )}`
-          )
-        })
-      })
-  })
-}
-
-function vsharpDev(img, opts) {
-  let extname = path.extname(img)
-  let sfunc = extFunction[extname]
-
-  sharp(img)
-    [sfunc](opts[extname])
-    .toBuffer((err, buffer, info) => {
+    return outBuffer.toBuffer((err, buffer, info) => {
       if (err) {
         console.log(err)
       }
-      let beforeSize = fs.statSync(img).size
+
       let currentSize = info.size
 
-      if (beforeSize < currentSize) {
+      if (previousSize < currentSize) {
         console.log(
-          `vsharp: [${chalk.green(
-            img
-          )}], current size is bigger after <sharp> processed, skipping...`
+          `vsharp: [${chalk.green(img)}], current size (${bytesToSize(
+            currentSize
+          )}) is bigger after <sharp> processed, skipping...`
         )
         return false
       }
+      fs.writeFile(img, buffer, {flag: 'w+'}, (err) => {
+        if (err) {
+          console.log(err)
+          return
+        }
+
+        let shrinkRatio = (
+          -((previousSize - currentSize) / previousSize) * 100
+        ).toFixed(2)
+
+        console.log(
+          `vsharp: [${chalk.green(img)}] ${chalk.yellow(
+            bytesToSize(previousSize)
+          )} <<${chalk.green(shrinkRatio + '%')}>> ${chalk.yellow(
+            bytesToSize(currentSize)
+          )}${unifyFormatMessage}`
+        )
+      })
     })
-}
-
-let units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-function bytesToSize(x) {
-  let l = 0,
-    n = parseInt(x, 10) || 0
-
-  while (n >= 1024 && ++l) {
-    n = n / 1024
-  }
-
-  return n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]
+  })
 }
