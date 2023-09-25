@@ -77,7 +77,7 @@ export default function vsharp(opts = {}) {
       walk(path.normalize(config.publicDir), function (err, filesRec) {
         if (err) {
           if (err.code === 'ENOENT') {
-            console.log(chalk.yellow('vsharp: no public directory'))
+            // no public folder
             return null
           }
           console.log('walk error: ', err)
@@ -88,7 +88,6 @@ export default function vsharp(opts = {}) {
         let includedFiles = []
 
         let scanCount = 0
-
         let doSharp = function () {
           filesRec.forEach((el) => {
             let p = normalizePath(el)
@@ -246,14 +245,6 @@ function vsharpIt(img, opts) {
       let preservedMetadata = {}
       if (opts.preserveMetadata.orientation) {
         preservedMetadata.orientation = metadata.orientation
-      }
-
-      if (opts.preserveMetadata.icc) {
-        preservedMetadata.icc = metadata.icc
-      }
-
-      if (opts.preserveMetadata.exif) {
-        preservedMetadata.exif = metadata.exif
       }
 
       outBuffer = outBuffer.withMetadata(preservedMetadata)

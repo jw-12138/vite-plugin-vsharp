@@ -141,9 +141,7 @@ export default ({
     "lossless": true
   },
   preserveMetadata: {
-    orientation: false,
-    icc: false,
-    exif: false
+    orientation: false
   }
 }
 ```
