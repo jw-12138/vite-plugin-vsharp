@@ -24,7 +24,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "glob": "^7.2.3",
-    "sharp": "^0.30.7"
+    "sharp": "0.31.3"
   },
   "repository": {
     "type": "git",
