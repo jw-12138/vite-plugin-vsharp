@@ -11,3 +11,4 @@ test/index.html
 test/vite.config.js
 public
 test
+yarn.lock
