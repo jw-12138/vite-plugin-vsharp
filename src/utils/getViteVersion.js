@@ -12,6 +12,4 @@ function getViteVersion(root) {
   return ''
 }
 
-export {
-  getViteVersion
-}
+export default getViteVersion

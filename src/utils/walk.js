@@ -25,6 +25,4 @@ const walk = function (dir, done) {
   })
 }
 
-export {
-  walk
-}
+export default walk

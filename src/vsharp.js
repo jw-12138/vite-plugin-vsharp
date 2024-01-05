@@ -5,9 +5,9 @@ import sharp from 'sharp'
 import chalk from 'chalk'
 import glob from 'glob'
 
-import {walk} from './utils/walk'
-import {getViteVersion} from './utils/getViteVersion'
-import {bytesToSize} from './utils/bytesToSize'
+import walk from './utils/walk.js'
+import getViteVersion from './utils/getViteVersion.js'
+import bytesToSize from './utils/bytesToSize.js'
 
 let vite_version
 let config

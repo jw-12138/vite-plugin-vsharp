@@ -11,4 +11,4 @@ function bytesToSize(x) {
   return n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]
 }
 
-export { bytesToSize }
+export default bytesToSize
