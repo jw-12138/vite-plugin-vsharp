@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-vsharp",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "A Vite plugin that compresses static images after each builds by using sharp.js",
   "main": "./lib/vsharp.js",
   "keywords": [
