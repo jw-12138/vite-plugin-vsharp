@@ -1,138 +1,135 @@
-# VSharp - A Vite Plugin for Compressing Static Images with [Sharp.js](https://www.npmjs.com/package/sharp)
+# VSharp: Optimize Images for the Web with Vite and Sharp
 
-[vsharp](https://github.com/jw-12138/vite-plugin-vsharp) is a plugin for [Vite](https://github.com/vitejs/vite), it allows you to compress static images after each build, using the powerful Sharp.js library. It is a great way to reduce the size of your images and improve the performance of your website or application. With VSharp, you can easily optimize the size of your images without sacrificing quality.
+VSharp is a powerful Vite plugin that utilizes the formidable Sharp library to compress and optimize static images during your build process. This helps to significantly reduce image sizes, enhancing your website or application's load time and overall performance. With VSharp, maintaining high-quality images at smaller file sizes becomes an effortless part of your development workflow.
 
-```text
-> npx vite build
+https://github.com/jw-12138/vite-plugin-vsharp/assets/29943110/9702e1c4-8283-4d97-aa20-3f6dccc32233
 
-vite v2.6.14 
-✓ 1 modules transformed.
-Generated an empty chunk: "index"
-dist/index.html   0.30 KiB
-vsharp: [dist/img/2_1.1.2.jpg] 725 KB <<-80.38%>> 142 KB
-vsharp: [dist/exclude_img/2_1.1.2.jpg] 725 KB <<-80.38%>> 142 KB
-vsharp: [dist/img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
-vsharp: [dist/exclude_img/001.jpg] 1.1 MB <<-81.67%>> 215 KB
-vsharp: [dist/img/times.png] 4.0 MB <<-72.98%>> 1.1 MB
-```
+## Features
 
---- 
+- Supported image formats: `.jpg/.jpeg`, `.png`, `.gif`, `.webp`.
+- Integrates image compression features from Sharp's API, including `sharp().jpeg()`, `sharp().png()`, `sharp().gif()`, and `sharp().webp()` ([Sharp documentation](https://sharp.pixelplumbing.com/api-output)).
 
-Currently supported file types are:
+## Getting Started
 
-- `.jpg/.jpeg`
-- `.png`
-- `.gif`
-- `.webp`
+### Installation
 
-Currently supported sharp functions are:
-
-- `sharp().jpeg()` [docs for this function](https://sharp.pixelplumbing.com/api-output#jpeg)
-- `sharp().png()` [docs for this function](https://sharp.pixelplumbing.com/api-output#png)
-- `sharp().gif()` [docs for this function](https://sharp.pixelplumbing.com/api-output#gif)
-- `sharp().webp()` [docs for this function](https://sharp.pixelplumbing.com/api-output#webp)
-
-## Installation
+To install the plugin, run the following command:
 
 ```bash
-npm i vite-plugin-vsharp -D
+npm install vite-plugin-vsharp --save-dev
 ```
 
-## Usage
+### Configuration
+
+Add VSharp to your Vite configuration file:
 
 ```javascript
 // vite.config.js
+import vsharp from 'vite-plugin-vsharp';
 
-import vsharp from "vite-plugin-vsharp"
-
-export default ({
+export default {
   plugins: [
-    vsharp(
-      // {...options}
-    )
-  ]
-})
+    vsharp({
+      // Plugin options go here
+    }),
+  ],
+};
 ```
 
-## Options
+## Plugin Options
 
-1. `exclude {Object[]?}`  
-   
-   This option will exclude image files **only** in bundle processing. Since `Vite` bundles images just in one folder, there
-   is **no need** for you to add any prefix to the pathname. No wildcard glob support for now.
-   
-   ```json5
+Customize the behavior of VSharp with the following options:
+
+1. `exclude`: Specify which image files to skip during image bundling. Simple names without path prefixes are required.
+
+   ```js
+   // vite.config.js
    {
-     "exclude": [
-       "bg.jpg", // good
-       "assets/bg.jpg", // bad
-       "bg.<hash>.jpg", // bad
+     // ...
+     plugins: [
+       vsharp({
+         exclude: [
+           "bg.jpg", // Includes "bg.jpg"
+           // Do not add path prefixes or hashes
+         ],
+       }),
      ]
    }
    ```
 
-2. `excludePublic {Object[]?}` 
+2. `excludePublic`: Exclude images from the public directory using glob patterns. Prefixes relative to your project's root are necessary.
 
-   This option will exclude image files in the public folder, glob pattern is supported. For this option, you'll need to add prefix according to your root path and configurations. `Vite` uses `public` as default public folder.
-
-   ```json5
+   ```js
+   // vite.config.js
    {
-     "excludePublic": [
-       "public/test_img/*"
+     // ...
+     plugins: [
+       vsharp({
+         excludePublic: [
+           "public/test_img/*", // Exclude all images in public/test_img
+         ],
+       }),
      ]
    }
    ```
-   
-3. `includePublic{Object[]?}` 
 
-   This option will include images from a previously excluded folder, it has a higher priority than `excludePublic` and will always overwrite `excludePublic` option.
+3. `includePublic`: Specifically include images from an excluded directory, overriding the `excludePublic` option.
 
-   ```json5
+   ```js
+   // vite.config.js
    {
-     "includePublic": [
-       "public/test_img/001.jpg"
+     // ...
+     plugins: [
+       vsharp({
+         includePublic: [
+           "public/test_img/001.jpg", // Include this particular image
+         ],
+       }),
      ]
    }
    ```
-   
-4. Resize
 
-   - width
-   - height
-   - scale (will overwrite `width` and `height`). 
+4. Resize options: Configure dimensions or scaling to resize images.
 
-   ```json
+   ```js
+   // vite.config.js
    {
-     "width": 800,
-     "height": 800,
-     "scale": 0.8
-   }
-   ```
-   
-5. Preserve Metadata
-   
-   Now we only support `orientation`, which will preserve the orientation of the image. 
-   
-   ```json
-   {
-     "preserveMetadata": {
-       "orientation": true
-     }
+     // ...
+     plugins: [
+       vsharp({
+         width: 800,
+         height: 800,
+         scale: 0.8, // Overrides width and height
+       }),
+     ]
    }
    ```
 
+5. Preserve Metadata: Maintain image metadata such as orientation.
 
+   ```js
+   // vite.config.js
+   {
+     // ...
+     plugins: [
+       vsharp({
+         preserveMetadata: {
+           orientation: true, // Preserves image orientation
+         },
+       }),
+     ]
+   }
+   ```
 
-## Defaults
+## Default Settings
+
+The plugin provides sensible defaults, which can be overridden by specifying your own settings in the plugin options:
 
 ```json
 {
-  "includePublic": [
-  ],
-  "excludePublic": [
-  ],
-  "exclude": [
-  ],
+  "includePublic": [],
+  "excludePublic": [],
+  "exclude": [],
   ".jpg": {
     "quality": 80
   },
@@ -152,5 +149,8 @@ export default ({
 }
 ```
 
-Every other parameter in currently supported sharp functions by this plugin can be found
-on [the official sharp docs](https://sharp.pixelplumbing.com/api-constructor).
+For additional Sharp function parameters, refer to the [official Sharp documentation](https://sharp.pixelplumbing.com/api-constructor).
+
+----
+
+Let VSharp take the weight off your shoulders by compressing your images seamlessly during the build process, and watch as your projects load faster than ever without compromising on image quality.

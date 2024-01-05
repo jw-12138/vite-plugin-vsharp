@@ -12,6 +12,7 @@ import bytesToSize from './utils/bytesToSize.js'
 let vite_version
 let config
 
+// default options
 const defaults = {
   scale: undefined,
   width: undefined,
@@ -39,6 +40,8 @@ const defaults = {
   }
 }
 
+// specific function for each file extension
+// values are from sharp
 const extFunction = {
   '.jpg': 'jpeg',
   '.jpeg': 'jpeg',
@@ -49,6 +52,11 @@ const extFunction = {
 
 const supportedFileExt = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 
+/**
+ * compress images during build process
+ * @param {object} opts
+ * @returns {{writeBundle(*, *): void, name: string, configResolved(*): void}}
+ */
 export default function vsharp(opts = {}) {
   const options = Object.assign({}, defaults, opts)
   return {
@@ -206,13 +214,18 @@ function getImgs(data, opts) {
   return _imgs
 }
 
+/**
+ * run with sharp
+ * @param {string} img - image path
+ * @param opts - options
+ */
 function vsharpIt(img, opts) {
   let extname = path.extname(img)
-  let sfunc = extFunction[extname]
+  let sharp_function = extFunction[extname]
 
-  let s_img = sharp(img, {animated: true})
+  let sharp_image = sharp(img, {animated: true})
 
-  s_img.metadata().then((metadata) => {
+  sharp_image.metadata().then((metadata) => {
     let previousSize = fs.statSync(img).size
     let currentWidth = metadata.width
     let targetWidth = metadata.width
@@ -237,9 +250,9 @@ function vsharpIt(img, opts) {
       targetHeight = null
     }
 
-    let outBuffer = s_img
+    let outBuffer = sharp_image
     outBuffer = outBuffer.resize(targetWidth, targetHeight)
-    outBuffer = outBuffer[sfunc](opts[extname])
+    outBuffer = outBuffer[sharp_function](opts[extname])
 
     if (typeof opts.preserveMetadata === 'object') {
       let preservedMetadata = {}

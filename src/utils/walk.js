@@ -1,6 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
+/**
+ *
+ * @param {string} dir - path to directory
+ * @param {function} done - callback function
+ */
 const walk = function (dir, done) {
   var results = []
   fs.readdir(dir, function (err, list) {
