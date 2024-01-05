@@ -1,4 +1,4 @@
-# VSharp: Optimize Images for the Web with Vite and Sharp
+# VSharp: Compress Images for the Web with Vite and Sharp
 
 VSharp is a powerful Vite plugin that utilizes the formidable Sharp library to compress and optimize static images during your build process. This helps to significantly reduce image sizes, enhancing your website or application's load time and overall performance. With VSharp, maintaining high-quality images at smaller file sizes becomes an effortless part of your development workflow.
 
@@ -40,7 +40,7 @@ export default {
 
 Customize the behavior of VSharp with the following options:
 
-1. `exclude`: Specify which image files to skip during image bundling. Simple names without path prefixes are required.
+1. `exclude`: Specify which image files to skip **during image bundling**. Simple names without path prefixes are required.
 
    ```js
    // vite.config.js
@@ -81,6 +81,9 @@ Customize the behavior of VSharp with the following options:
      // ...
      plugins: [
        vsharp({
+         excludePublic: [
+           "public/test_img/*"
+         ],
          includePublic: [
            "public/test_img/001.jpg", // Include this particular image
          ],
@@ -97,8 +100,8 @@ Customize the behavior of VSharp with the following options:
      // ...
      plugins: [
        vsharp({
-         width: 800,
-         height: 800,
+         width: 800, // Max width, images with a smaller width than this will not be resized
+         height: 800, // Max height, images with a smaller height than this will not be resized
          scale: 0.8, // Overrides width and height
        }),
      ]
@@ -150,7 +153,3 @@ The plugin provides sensible defaults, which can be overridden by specifying you
 ```
 
 For additional Sharp function parameters, refer to the [official Sharp documentation](https://sharp.pixelplumbing.com/api-constructor).
-
-----
-
-Let VSharp take the weight off your shoulders by compressing your images seamlessly during the build process, and watch as your projects load faster than ever without compromising on image quality.
