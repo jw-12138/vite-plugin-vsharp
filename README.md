@@ -2,7 +2,8 @@
 
 VSharp is a powerful Vite plugin that utilizes the formidable Sharp library to compress and optimize static images during your build process. This helps to significantly reduce image sizes, enhancing your website or application's load time and overall performance. With VSharp, maintaining high-quality images at smaller file sizes becomes an effortless part of your development workflow.
 
-https://github.com/jw-12138/vite-plugin-vsharp/assets/29943110/9702e1c4-8283-4d97-aa20-3f6dccc32233
+<img width="716" alt="image" src="https://github.com/jw-12138/vite-plugin-vsharp/assets/29943110/3e4b97f4-892c-47c0-b850-d1e0fc46b245">
+
 
 ## Features
 
@@ -144,6 +145,9 @@ The plugin provides sensible defaults, which can be overridden by specifying you
     "palette": true
   },
   ".webp": {
+    "lossless": true
+  },
+  ".gif": {
     "lossless": true
   },
   "preserveMetadata": {
