@@ -148,7 +148,7 @@ The plugin provides sensible defaults, which can be overridden by specifying you
     "lossless": true
   },
   ".gif": {
-    "lossless": true
+    
   },
   "preserveMetadata": {
     "orientation": false
