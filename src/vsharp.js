@@ -226,10 +226,21 @@ function vsharpIt(img, opts) {
   let extname = path.extname(img)
   let sharp_function = extFunction[extname]
 
+  if (!fs.existsSync(img)) {
+    console.log(`vsharp: [${chalk.red(img)}] File does not exist, skipping...`)
+    return
+  }
+
   let sharp_image = sharp(img, {animated: true})
 
   sharp_image.metadata().then((metadata) => {
-    let previousSize = fs.statSync(img).size
+    let previousSize
+    try {
+      previousSize = fs.statSync(img).size
+    } catch (err) {
+      console.log(`vsharp: [${chalk.red(img)}] Cannot access file: ${err.message}`)
+      return
+    }
     let currentWidth = metadata.width
     let targetWidth = metadata.width
     let targetHeight = metadata.height
