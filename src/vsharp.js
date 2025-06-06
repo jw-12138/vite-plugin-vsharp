@@ -94,28 +94,28 @@ export default function vsharp(opts = {}) {
 
         let excludedFiles = []
         let includedFiles = []
-
         let scanCount = 0
-        let doSharp = function () {
-          filesRec.forEach((el) => {
+
+        const processFiles = () => {
+          let allImageFiles = filesRec.map(el => {
             let p = normalizePath(el)
-            let relative_p = p.replace(config.root + '/', '')
+            return p.replace(config.root + '/', '')
+          }).filter(p => supportedFileExt.includes(path.extname(p)))
 
-            if (excludedFiles.includes(relative_p)) {
-              return false
-            }
+          let filteredFiles = allImageFiles.filter(file => {
+            return !excludedFiles.some(pattern => 
+              file.startsWith(pattern.replace('*', '')) || 
+              file === pattern
+            )
+          })
 
-            let thisExtname = path.extname(relative_p)
-
-            if (supportedFileExt.includes(thisExtname)) {
-              public_images.push(relative_p)
+          includedFiles.forEach(file => {
+            if (!filteredFiles.includes(file)) {
+              filteredFiles.push(file)
             }
           })
 
-          public_images = public_images.concat(includedFiles)
-          public_images = [...new Set(public_images)]
-
-          public_images.forEach((img) => {
+          filteredFiles.forEach(img => {
             let publicDir = normalizePath(config.publicDir).replace(
               config.root + '/',
               ''
@@ -125,61 +125,64 @@ export default function vsharp(opts = {}) {
           })
         }
 
-        if (options.excludePublic.length === 0) {
-          doSharp()
+        const checkAndProcess = () => {
+          scanCount++
+          if (scanCount === 2) {
+            processFiles()
+          }
         }
 
-        options.includePublic.forEach((rule, i) => {
-          glob(
-            rule,
-            {
-              root: options.root
-            },
-            function (err, files) {
-              if (err) {
-                console.log(err)
-                return false
-              }
-              files.forEach((file) => {
-                includedFiles.push(file)
-              })
+        if (options.excludePublic.length > 0) {
+          options.excludePublic.forEach((rule, i) => {
+            glob(
+              rule,
+              {
+                root: options.root
+              },
+              function (err, files) {
+                if (err) {
+                  console.log(err)
+                  return false
+                }
+                files.forEach((file) => {
+                  excludedFiles.push(file)
+                })
 
-              if (i === options.includePublic.length - 1) {
-                scanCount++
-
-                if (scanCount === 2) {
-                  doSharp()
+                if (i === options.excludePublic.length - 1) {
+                  checkAndProcess()
                 }
               }
-            }
-          )
-        })
+            )
+          })
+        } else {
+          scanCount++
+        }
 
-        options.excludePublic.forEach((rule, i) => {
-          glob(
-            rule,
-            {
-              root: options.root
-            },
-            function (err, files) {
-              if (err) {
-                console.log(err)
-                return false
-              }
-              files.forEach((file) => {
-                excludedFiles.push(file)
-              })
+        if (options.includePublic.length > 0) {
+          options.includePublic.forEach((rule, i) => {
+            glob(
+              rule,
+              {
+                root: options.root
+              },
+              function (err, files) {
+                if (err) {
+                  console.log(err)
+                  return false
+                }
+                files.forEach((file) => {
+                  includedFiles.push(file)
+                })
 
-              if (i === options.excludePublic.length - 1) {
-                scanCount++
-
-                if (scanCount === 2) {
-                  doSharp()
+                if (i === options.includePublic.length - 1) {
+                  checkAndProcess()
                 }
               }
-            }
-          )
-        })
+            )
+          })
+        } else {
+          scanCount++
+        }
       })
     }
   }

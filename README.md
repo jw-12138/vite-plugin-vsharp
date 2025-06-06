@@ -1,28 +1,27 @@
-# VSharp: Compress Images for the Web with Vite and Sharp
+# VSharp: Simple Image Compression for Vite Projects
 
-VSharp is a powerful Vite plugin that utilizes the formidable Sharp library to compress and optimize static images during your build process. This helps to significantly reduce image sizes, enhancing your website or application's load time and overall performance. With VSharp, maintaining high-quality images at smaller file sizes becomes an effortless part of your development workflow.
+VSharp is a Vite plugin that makes image optimization easy. It uses the powerful Sharp library to automatically compress your images during the build process. This means faster-loading websites with high-quality images, all without any extra work on your part.
 
 <img width="716" alt="image" src="https://github.com/jw-12138/vite-plugin-vsharp/assets/29943110/3e4b97f4-892c-47c0-b850-d1e0fc46b245">
 
-
 ## Features
 
-- Supported image formats: `.jpg/.jpeg`, `.png`, `.gif`, `.webp`.
-- Integrates image compression features from Sharp's API, including `sharp().jpeg()`, `sharp().png()`, `sharp().gif()`, and `sharp().webp()` ([Sharp documentation](https://sharp.pixelplumbing.com/api-output)).
+- Works with common image formats: `.jpg/.jpeg`, `.png`, `.gif`, and `.webp`
+- Uses Sharp's proven compression methods for each format type ([Sharp documentation](https://sharp.pixelplumbing.com/api-output))
 
 ## Getting Started
 
 ### Installation
 
-To install the plugin, run the following command:
+Add VSharp to your project:
 
 ```bash
 npm install vite-plugin-vsharp --save-dev
 ```
 
-### Configuration
+### Basic Setup
 
-Add VSharp to your Vite configuration file:
+Add VSharp to your Vite config file:
 
 ```javascript
 // vite.config.js
@@ -31,94 +30,96 @@ import vsharp from 'vite-plugin-vsharp';
 export default {
   plugins: [
     vsharp({
-      // Plugin options go here
+      // Your options here
     }),
   ],
 };
 ```
 
-## Plugin Options
+## Configuration Options
 
-Customize the behavior of VSharp with the following options:
+Here's how you can customize VSharp to fit your needs:
 
-1. `exclude`: Specify which image files to skip **during image bundling**. Simple names without path prefixes are required.
+1. `exclude`: Skip specific images during compression. Just list the filenames:
 
    ```js
    // vite.config.js
    {
-     // ...
      plugins: [
        vsharp({
          exclude: [
-           "bg.jpg", // Includes "bg.jpg"
-           // Do not add path prefixes or hashes
+           "bg.jpg", // Won't compress this file
+           // Note: Just use filenames, no paths needed
          ],
        }),
      ]
    }
    ```
 
-2. `excludePublic`: Exclude images from the public directory using glob patterns. Prefixes relative to your project's root are necessary.
+2. `excludePublic`: Skip images in your public folder using patterns:
 
    ```js
    // vite.config.js
    {
-     // ...
      plugins: [
        vsharp({
          excludePublic: [
-           "public/test_img/*", // Exclude all images in public/test_img
+           "public/*", // Skip everything in public
+           "public/test_img/*", // Skip all images in test_img
          ],
        }),
      ]
    }
    ```
 
-3. `includePublic`: Specifically include images from an excluded directory, overriding the `excludePublic` option.
+3. `includePublic`: Choose specific files to compress from excluded folders:
 
    ```js
    // vite.config.js
    {
-     // ...
      plugins: [
        vsharp({
          excludePublic: [
-           "public/test_img/*"
+           "public/*" // Skip all public files
          ],
          includePublic: [
-           "public/test_img/001.jpg", // Include this particular image
+           "public/images/*", // But compress files in this folder
+           "public/test_img/001.jpg", // And this specific image
          ],
        }),
      ]
    }
    ```
 
-4. Resize options: Configure dimensions or scaling to resize images.
+   Note: `includePublic` takes priority over `excludePublic`, letting you:
+   - First exclude entire folders
+   - Then pick specific files or folders to include
+   - Use either patterns or exact file paths
+
+4. Image Size Options: Control how your images are resized:
 
    ```js
    // vite.config.js
    {
-     // ...
      plugins: [
        vsharp({
-         width: 800, // Max width, images with a smaller width than this will not be resized
-         height: 800, // Max height, images with a smaller height than this will not be resized
-         scale: 0.8, // Overrides width and height
+         width: 800, // Maximum width (won't upscale smaller images)
+         height: 800, // Maximum height (won't upscale smaller images)
+         scale: 0.8, // Or use this to reduce by percentage (overrides width/height)
        }),
      ]
    }
    ```
 
-5. Preserve Metadata: Maintain image metadata such as orientation.
+5. Metadata Options: Keep important image information:
 
    ```js
    // vite.config.js
    {
-     // ...
      plugins: [
        vsharp({
          preserveMetadata: {
-           orientation: true, // Preserves image orientation
+           orientation: true, // Keeps correct image orientation
          },
        }),
      ]
@@ -127,7 +128,7 @@ Customize the behavior of VSharp with the following options:
 
 ## Default Settings
 
-The plugin provides sensible defaults, which can be overridden by specifying your own settings in the plugin options:
+VSharp comes with these sensible defaults, which you can override as needed:
 
 ```json
 {
@@ -156,4 +157,4 @@ The plugin provides sensible defaults, which can be overridden by specifying you
 }
 ```
 
-For additional Sharp function parameters, refer to the [official Sharp documentation](https://sharp.pixelplumbing.com/api-constructor).
+For more advanced options, check out the [Sharp documentation](https://sharp.pixelplumbing.com/api-constructor).

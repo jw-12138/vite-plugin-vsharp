@@ -24,9 +24,10 @@
     "vite": ">= 2.6 <= 5"
   },
   "dependencies": {
+    "caniuse-lite": "^1.0.30001721",
     "chalk": "^4.1.2",
     "glob": "^7.2.3",
-    "sharp": "^0.33.4"
+    "sharp": "^0.34.2"
   },
   "repository": {
     "type": "git",
